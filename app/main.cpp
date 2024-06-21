@@ -78,6 +78,7 @@ int main(int argc, char **argv) {
 
         for (int i: idx) {
 
+            //1,特征提取和追踪匹配
             int64_t t_ns = vio_dataset->get_image_timestamps()[i];
 
             cur_img_t_s = t_ns * 1e-9;
@@ -126,7 +127,7 @@ int main(int argc, char **argv) {
             }
 
             if (pDrtVioInit->addFeatureCheckParallax(cur_img_t_s, image, 0.0)) {
-
+                //2,imu预积分
                 idx_time.push_back(cur_img_t_s);
 
                 std::cout << "add image is: " << fixed << cur_img_t_s << " image number is: " << idx_time.size()
@@ -215,7 +216,7 @@ int main(int argc, char **argv) {
 
             }
 
-            if (idx_time.size() >= 10) break;
+            if (idx_time.size() >= 10) break;//只取用10张图
 
             if (SHOW_TRACK) {
                 cv::Mat show_img;
@@ -242,14 +243,14 @@ int main(int argc, char **argv) {
 
         if (idx_time.size() < 10) continue;
 
-        bool is_good = pDrtVioInit->checkAccError();
+        bool is_good = pDrtVioInit->checkAccError();//要求不能是静止状态
 
         if (!is_good)
         {
             continue;
         }
 
-        if ( !pDrtVioInit->process()) {
+        if ( !pDrtVioInit->process()) {//算法核心流程
             save_file << "time: " << fixed << idx_time[0] << " other_reason" << std::endl;
             save_file << "scale_error: " << "nan" << std::endl;
             save_file << "pose_error: " << "nan" << std::endl;

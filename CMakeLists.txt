@@ -59,7 +59,7 @@ ADD_LIBRARY(MyVio SHARED
         src/initMethod/drtLooselyCoupled.cpp
         src/initMethod/drtTightlyCoupled.cpp
         src/initMethod/polynomial.cc
-        src/visualization/visualize.cpp
+        # src/visualization/visualize.cpp
         src/factor/imuIntegFactor.cc
 
         )

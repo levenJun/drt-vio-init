@@ -66,6 +66,9 @@ namespace DRT {
         imu_meas.push_back(imuData);
     }
 
+    //要求插入新帧时 距离最新帧时差 至少为220ms,满足时差要求才进行下一步
+    //新帧id缓存进 local_active_frames
+    //特征点信息缓存进 SFMConstruct: 插入新帧下的观测.  fid->obs[frame_id]=kpt_obs
     bool drtVioInit::addFeatureCheckParallax(TimeFrameId frame_id, const FeatureTrackerResulst &image,
                                              double td) {
 
@@ -75,7 +78,7 @@ namespace DRT {
             insert_image_frame = true;
         } else {
 
-            double parallax_sum = 0;
+            double parallax_sum = 0;//计算了,但是没有用到
             int parallax_num = 0;
             for (const auto &pts: image) {
                 if (SFMConstruct.find(pts.first) != SFMConstruct.end()) {
@@ -91,7 +94,7 @@ namespace DRT {
                 }
             }
 
-            if (std::abs(frame_id - last_image_t_ns) >= 0.22) {
+            if (std::abs(frame_id - last_image_t_ns) >= 0.22) {//要求插入新帧时 距离最新帧时差 至少为220ms
                 insert_image_frame = true;
             } else
             {
@@ -126,6 +129,7 @@ namespace DRT {
         }
     }
 
+    //静止时返回false,否则返回true
     bool drtVioInit::checkAccError() {
 
         bool check_success = false;
@@ -153,13 +157,14 @@ namespace DRT {
         avgA /= static_cast<double>(imu_meas.size());
         const double avgA_error = std::abs(avgA.norm() - G.norm()) / G.norm();
 
-        if (avgA_error > 5e-3 and scoreSum <= 1)
+        if (avgA_error > 5e-3 and scoreSum <= 1)//要求不能是静止状态
             check_success = true;
 
         return check_success;
     }
 
 
+    //两个点z归一化后的uv视差
     double drtVioInit::compensatedParallax2(const Eigen::Vector3d &p_i, const Eigen::Vector3d &p_j) {
 
         double ans = 0;
@@ -343,7 +348,7 @@ namespace DRT {
 
     }
 
-    bool drtVioInit::gyroBiasEstimator() {
+    bool drtVioInit::gyroBiasEstimator() {//求解bg主函数
 
         ticToc t_optimize;
 
@@ -390,7 +395,7 @@ namespace DRT {
             CHECK(imu1.start_t_ns == target1_tid) << "imu meas error" << fixed << imu1.start_t_ns << " " << target1_tid;
             CHECK(imu1.end_t_ns == target2_tid) << "imu meas error" << fixed << imu1.end_t_ns << " " << target2_tid;
 
-            //自动求导
+            //自动求导!!!!
             ceres::CostFunction *eigensolver_cost_function = BiasSolverCostFunctor::Create(fis, fjs,
                                                                                            Eigen::Quaterniond(Rbc_),
                                                                                            imu1);

@@ -8,7 +8,7 @@
 #include <string>
 #include <unordered_map>
 #include <glog/logging.h>
-#include <pangolin/pangolin.h>
+// #include <pangolin/pangolin.h>
 
 #include "utils/eigenTypes.h"
 #include "utils/ticToc.h"
